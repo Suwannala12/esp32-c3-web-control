@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32-C3 BLE Control</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #333; }
+        button { 
+            width: 100%; padding: 15px; margin: 10px 0; font-size: 18px; font-weight: bold;
+            border: none; border-radius: 10px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-connect { background-color: #28a745; color: white; }
+        .btn-on { background-color: #007bff; color: white; }
+        .btn-off { background-color: #dc3545; color: white; }
+        button:active { transform: scale(0.98); opacity: 0.8; }
+        #status { margin-top: 15px; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ESP32-C3 Control</h2>
+    <div id="status">สถานะ: ยังไม่ได้เชื่อมต่อ</div>
+    
+    <button class="btn-connect" onclick="connectBLE()">1. เชื่อมต่อ Bluetooth</button>
+    <hr>
+    <button class="btn-on" onclick="sendCommand('1')">เปิดไฟ (ON)</button>
+    <button class="btn-off" onclick="sendCommand('0')">ปิดไฟ (OFF)</button>
+</div>
+
+<script>
+let charac;
+const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+const CHARACTERISTIC_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
+
+async function connectBLE() {
+    const statusDiv = document.getElementById('status');
+    try {
+        statusDiv.innerText = "กำลังค้นหาอุปกรณ์...";
+        const device = await navigator.bluetooth.requestDevice({
+            filters: [{ name: 'ESP32-C3-Control' }],
+            optionalServices: [SERVICE_UUID]
+        });
+        
+        statusDiv.innerText = "กำลังเชื่อมต่อ GATT...";
+        const server = await device.gatt.connect();
+        
+        statusDiv.innerText = "กำลังดึง Service...";
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        
+        statusDiv.innerText = "พร้อมใช้งาน!";
+        charac = await service.getCharacteristic(CHARACTERISTIC_UUID);
+        
+        alert("เชื่อมต่อ ESP32-C3 สำเร็จ!");
+    } catch (error) {
+        statusDiv.innerText = "เกิดข้อผิดพลาด: " + error;
+        console.error(error);
+    }
+}
+
+async function sendCommand(val) {
+    if (!charac) {
+        alert("กรุณาเชื่อมต่อ Bluetooth ก่อนครับ");
+        return;
+    }
+    try {
+        const data = new TextEncoder().encode(val);
+        await charac.writeValue(data);
+    } catch (error) {
+        alert("ส่งข้อมูลล้มเหลว: " + error);
+    }
+}
+</script>
+
+</body>
+</html>

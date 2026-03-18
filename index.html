@@ -3,154 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Servo Dashboard v2</title>
+    <title>ESP32-C3 Advanced Controller</title>
     <style>
         :root {
-            --bg-color: #1a1a2e;
-            --card-bg: #16213e;
-            --accent: #0f3460;
-            --text: #e94560;
-            --btn-active: #533483;
-            --btn-connect: #28a745;
-            --btn-action: #f39c12;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --btn-main: #3b82f6;
+            --btn-action: #f59e0b;
+            --btn-conn: #10b981;
+            --btn-active: #ef4444;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
             color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            height: 100vh;
             margin: 0;
-            overflow: hidden; /* ป้องกันการเลื่อนหน้าจอไปมาขณะกดปุ่ม */
+            touch-action: manipulation;
         }
 
-        .status-header {
-            width: 90%;
-            padding: 15px;
-            background: var(--card-bg);
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        #status-text { color: var(--text); font-weight: bold; }
-
-        /* การจัดวางปุ่ม D-Pad และปุ่มเพิ่มเติม */
-        .control-panel {
+        .dashboard {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             display: grid;
-            grid-template-columns: repeat(3, 90px);
-            grid-template-rows: repeat(4, 90px); /* เพิ่มแถวสำหรับปุ่ม A และ B */
+            grid-template-columns: repeat(3, 85px);
+            grid-template-rows: repeat(4, 85px);
             gap: 15px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .control-btn {
-            background: var(--accent);
+        button {
             border: none;
-            border-radius: 15px;
+            border-radius: 20px;
             color: white;
-            font-size: 30px;
+            font-size: 24px;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 0 #08203e;
-            transition: all 0.1s;
-            -webkit-tap-highlight-color: transparent; /* ลบแสงสีฟ้าตอนกดในมือถือ */
+            transition: 0.1s;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .control-btn:active {
+        button:active {
             transform: translateY(4px);
-            box-shadow: 0 2px 0 #08203e;
-            background-color: var(--btn-active);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
         }
 
-        /* ตำแหน่งปุ่ม A และ B (แถวบนสุด) */
-        .btn-a { grid-column: 1; grid-row: 1; background: var(--btn-action); box-shadow: 0 5px 0 #c87f0a; font-size: 24px; }
-        .btn-b { grid-column: 3; grid-row: 1; background: var(--btn-action); box-shadow: 0 5px 0 #c87f0a; font-size: 24px; }
+        /* การจัดวางตำแหน่งปุ่ม */
+        .btn-a { grid-column: 1; grid-row: 1; background: var(--btn-action); }
+        .btn-b { grid-column: 3; grid-row: 1; background: var(--btn-action); }
 
-        /* ตำแหน่ง D-Pad (แถวที่ 2-4) */
-        .btn-up { grid-column: 2; grid-row: 2; }
-        .btn-left { grid-column: 1; grid-row: 3; }
-        .btn-right { grid-column: 3; grid-row: 3; }
-        .btn-down { grid-column: 2; grid-row: 4; }
+        .btn-up { grid-column: 2; grid-row: 2; background: var(--btn-main); }
+        .btn-left { grid-column: 1; grid-row: 3; background: var(--btn-main); }
+        .btn-right { grid-column: 3; grid-row: 3; background: var(--btn-main); }
+        .btn-down { grid-column: 2; grid-row: 4; background: var(--btn-main); }
 
-        /* ตำแหน่งปุ่มเชื่อมต่อ (ขวาล่างสุด) */
-        .btn-connect {
-            grid-column: 3; grid-row: 4;
-            font-size: 24px;
-            background: var(--btn-connect);
-            box-shadow: 0 5px 0 #1e7e34;
+        .btn-connect { 
+            grid-column: 3; grid-row: 4; 
+            background: var(--btn-conn); 
+            font-size: 28px;
+            border-radius: 50%;
         }
 
-        .btn-connect.connected { background: var(--text); box-shadow: 0 5px 0 #a02d40; }
+        .connected { background: var(--btn-active) !important; }
 
-        .label { margin-top: 30px; color: #888; font-size: 12px; }
+        #status {
+            grid-column: 1 / span 3;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+        }
     </style>
 </head>
 <body>
 
-    <div class="status-header">
-        <div>ESP32-C3 Servo Dashboard</div>
-        <div id="status-text">สถานะ: รอการเชื่อมต่อ</div>
+    <div id="status">สถานะ: รอการเชื่อมต่อ</div>
+
+    <div class="dashboard">
+        <button class="btn-a" onclick="send('A')">A</button>
+        <button class="btn-b" onclick="send('B')">B</button>
+
+        <button class="btn-up" onclick="send('U')">▲</button>
+        <button class="btn-left" onclick="send('L')">◀</button>
+        <button class="btn-right" onclick="send('R')">▶</button>
+        <button class="btn-down" onclick="send('D')">▼</button>
+
+        <button id="conn-btn" class="btn-connect" onclick="connect()">🔗</button>
     </div>
-
-    <div class="control-panel">
-        <button class="control-btn btn-a" onmousedown="sendCommand('A')" ontouchstart="sendCommand('A')">A</button>
-        <button class="control-btn btn-b" onmousedown="sendCommand('B')" ontouchstart="sendCommand('B')">B</button>
-
-        <button class="control-btn btn-up" onmousedown="sendCommand('U')" ontouchstart="sendCommand('U')">▲</button>
-        <button class="control-btn btn-left" onmousedown="sendCommand('L')" ontouchstart="sendCommand('L')">◀</button>
-        <button class="control-btn btn-right" onmousedown="sendCommand('R')" ontouchstart="sendCommand('R')">▶</button>
-        <button class="control-btn btn-down" onmousedown="sendCommand('D')" ontouchstart="sendCommand('D')">▼</button>
-
-        <button id="connect-btn" class="control-btn btn-connect" onclick="connectBLE()">🔗</button>
-    </div>
-
-    <div class="label">พัฒนาโดย Suwannala12</div>
 
     <script>
-        let charac;
+        let characteristic;
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-        const CHARACTERISTIC_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
+        const CHAR_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
 
-        async function connectBLE() {
-            const statusLabel = document.getElementById('status-text');
-            const connectBtn = document.getElementById('connect-btn');
+        async function connect() {
+            const status = document.getElementById('status');
+            const btn = document.getElementById('conn-btn');
             try {
                 const device = await navigator.bluetooth.requestDevice({
-                    filters: [{ namePrefix: 'ESP32' }], // ค้นหาบอร์ดที่ขึ้นต้นด้วย ESP32
+                    filters: [{ namePrefix: 'ESP32' }],
                     optionalServices: [SERVICE_UUID]
                 });
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
-                charac = await service.getCharacteristic(CHARACTERISTIC_UUID);
+                characteristic = await service.getCharacteristic(CHAR_UUID);
                 
-                statusLabel.innerText = "สถานะ: เชื่อมต่อสำเร็จ ✅";
-                statusLabel.style.color = "#28a745";
-                connectBtn.classList.add('connected');
-            } catch (error) {
-                console.log(error);
-                statusLabel.innerText = "สถานะ: การเชื่อมต่อล้มเหลว";
+                status.innerText = "เชื่อมต่อแล้ว ✅";
+                status.style.color = "#10b981";
+                btn.classList.add('connected');
+            } catch (err) {
+                status.innerText = "การเชื่อมต่อผิดพลาด";
+                console.error(err);
             }
         }
 
-        async function sendCommand(val) {
-            if (!charac) return;
+        async function send(val) {
+            if (!characteristic) return;
             try {
                 const data = new TextEncoder().encode(val);
-                await charac.writeValue(data);
-                console.log("Sent: " + val);
-            } catch (error) {
-                console.log("Error: " + error);
+                await characteristic.writeValue(data);
+            } catch (err) {
+                console.log("Send Error:", err);
             }
         }
     </script>

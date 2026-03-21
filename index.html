@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Pro v1.2</title>
+    <title>ESP32-C3 Pro v1.3</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-sine: #a855f7; --btn-gpio: #ef4444; --btn-conn: #10b981; }
         body { font-family: system-ui, sans-serif; background-color: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: none; position: relative; }
@@ -16,6 +16,7 @@
         .btn-left { grid-column: 1; grid-row: 3; background: var(--btn-main); }
         .btn-right { grid-column: 3; grid-row: 3; background: var(--btn-main); }
         .btn-down { grid-column: 2; grid-row: 4; background: var(--btn-main); }
+        /* ย้ายปุ่ม Connect ไปขวาสุด */
         .btn-connect { grid-column: 3; grid-row: 4; background: var(--btn-conn); border-radius: 50%; }
         #status { margin-bottom: 15px; font-size: 14px; color: #94a3b8; }
         .version-info { position: absolute; bottom: 10px; right: 15px; font-size: 12px; color: #475569; }
@@ -25,14 +26,14 @@
     <div id="status">สถานะ: รอการเชื่อมต่อ</div>
     <div class="dashboard">
         <button class="btn-a" onpointerdown="sendOnce('A')">AUTO</button>
-        <button class="btn-b" onpointerdown="sendOnce('B')">SHOT</button>
+        <button class="btn-b" onpointerdown="sendOnce('B')">LED</button>
         <button class="btn-up" onpointerdown="startLoop('U')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▲</button>
         <button class="btn-left" onpointerdown="startLoop('L')" onpointerup="stopLoop()" onpointerleave="stopLoop()">◀</button>
         <button class="btn-right" onpointerdown="startLoop('R')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▶</button>
         <button class="btn-down" onpointerdown="startLoop('D')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▼</button>
         <button id="conn-btn" class="btn-connect" onclick="connect()">🔗</button>
     </div>
-    <div class="version-info">v1.2 (Sine Wave Mode)</div>
+    <div class="version-info">v1.3 (Auto-Sync LED)</div>
 
     <script>
         let characteristic;

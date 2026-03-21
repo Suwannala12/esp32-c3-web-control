@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Safety Control</title>
+    <title>ESP32-C3 Pro Control</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-action: #f59e0b; --btn-conn: #10b981; }
         body { font-family: system-ui, sans-serif; background-color: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: none; }
@@ -40,7 +40,7 @@
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
         const CHAR_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
 
-        function vibrate() { if (navigator.vibrate) navigator.vibrate(25); }
+        function vibrate(ms = 25) { if (navigator.vibrate) navigator.vibrate(ms); }
 
         async function connect() {
             try {
@@ -51,35 +51,34 @@
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHAR_UUID);
                 document.getElementById('status').innerText = "เชื่อมต่อแล้ว ✅";
-                vibrate();
-            } catch (err) { alert("เชื่อมต่อไม่สำเร็จ: " + err); }
+                vibrate(100);
+            } catch (err) { console.log(err); }
         }
 
         function sendOnce(val) { vibrate(); send(val); }
 
-// ในฟังก์ชัน startLoop ให้เปลี่ยนตัวเลขเป็น 50
-function startLoop(val) {
-    if (intervalId) return;
-    vibrate();
-    send(val);
-    intervalId = setInterval(() => { 
-        send(val); 
-    }, 50); // ส่งรัวขึ้นเป็น 50ms
-}}
+        function startLoop(val) {
+            if (intervalId) return;
+            vibrate();
+            send(val);
+            // ส่งรัวขึ้นเป็น 50ms เพื่อลดโอกาสสัญญาณขาดช่วง
+            intervalId = setInterval(() => { send(val); }, 50); 
+        }
 
         function stopLoop() {
             if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
             }
-            send('S'); // ส่ง Stop ทันทีเมื่อปล่อย
+            send('S'); // ส่ง Stop เพื่อความแน่นอน
         }
 
         async function send(val) {
             if (!characteristic) return;
             try {
+                // ใช้ writeValueWithoutResponse เพื่อความเร็วสูงสุด
                 await characteristic.writeValueWithoutResponse(new TextEncoder().encode(val));
-            } catch (err) { console.log("Send Error: ", err); }
+            } catch (err) { console.log(err); }
         }
     </script>
 </body>

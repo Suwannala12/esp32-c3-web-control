@@ -3,27 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Haptic Continuous v4</title>
+    <title>ESP32-C3 Momentary Control</title>
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6;
-            --btn-action: #f59e0b; --btn-conn: #10b981;
-        }
-        body {
-            font-family: system-ui, sans-serif; background-color: var(--bg); color: white;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; margin: 0; overflow: hidden; touch-action: none;
-        }
-        .dashboard {
-            background: var(--card); padding: 30px; border-radius: 40px;
-            display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(4, 85px); gap: 18px;
-        }
-        button {
-            border: none; border-radius: 22px; color: white; font-size: 26px; font-weight: bold;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            transition: all 0.05s ease-out; box-shadow: 0 8px 0 rgba(0,0,0,0.5); position: relative; top: 0;
-            -webkit-tap-highlight-color: transparent; user-select: none;
-        }
+        :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-action: #f59e0b; --btn-conn: #10b981; }
+        body { font-family: system-ui, sans-serif; background-color: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: none; }
+        .dashboard { background: var(--card); padding: 30px; border-radius: 40px; display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(4, 85px); gap: 18px; }
+        button { border: none; border-radius: 22px; color: white; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.05s; box-shadow: 0 8px 0 rgba(0,0,0,0.5); position: relative; top: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
         button:active { top: 6px; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
         .btn-a { grid-column: 1; grid-row: 1; background: var(--btn-action); }
         .btn-b { grid-column: 3; grid-row: 1; background: var(--btn-action); }
@@ -38,22 +23,21 @@
 <body>
     <div id="status">สถานะ: รอการเชื่อมต่อ</div>
     <div class="dashboard">
-        <button class="btn-a" onpointerdown="sendOnce('A')" onpointerup="stopInput()">A</button>
-        <button class="btn-b" onpointerdown="sendOnce('B')" onpointerup="stopInput()">B</button>
-        <button class="btn-up" onpointerdown="startLoop('U')" onpointerup="stopInput()" onpointerleave="stopInput()">▲</button>
-        <button class="btn-left" onpointerdown="startLoop('L')" onpointerup="stopInput()" onpointerleave="stopInput()">◀</button>
-        <button class="btn-right" onpointerdown="startLoop('R')" onpointerup="stopInput()" onpointerleave="stopInput()">▶</button>
-        <button class="btn-down" onpointerdown="startLoop('D')" onpointerup="stopInput()" onpointerleave="stopInput()">▼</button>
+        <button class="btn-a" onpointerdown="send('A')">A</button>
+        <button class="btn-b" onpointerdown="send('B')">B</button>
+        
+        <button class="btn-up" onpointerdown="send('U')" onpointerup="send('S')" onpointerleave="send('S')">▲</button>
+        <button class="btn-left" onpointerdown="send('L')" onpointerup="send('S')" onpointerleave="send('S')">◀</button>
+        <button class="btn-right" onpointerdown="send('R')" onpointerup="send('S')" onpointerleave="send('S')">▶</button>
+        <button class="btn-down" onpointerdown="send('D')" onpointerup="send('S')" onpointerleave="send('S')">▼</button>
+        
         <button id="conn-btn" class="btn-connect" onclick="connect()">🔗</button>
     </div>
 
     <script>
         let characteristic;
-        let intervalId = null;
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
         const CHAR_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
-
-        function vibrate() { if (navigator.vibrate) navigator.vibrate(20); }
 
         async function connect() {
             try {
@@ -64,23 +48,8 @@
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHAR_UUID);
                 document.getElementById('status').innerText = "เชื่อมต่อแล้ว ✅";
-                vibrate();
+                if (navigator.vibrate) navigator.vibrate(50);
             } catch (err) { console.error(err); }
-        }
-
-        // สำหรับปุ่ม A, B (กดทีเดียว)
-        function sendOnce(val) { vibrate(); send(val); }
-
-        // สำหรับปุ่มทิศทาง (กดค้าง)
-        function startLoop(val) {
-            if (intervalId) return;
-            vibrate();
-            send(val);
-            intervalId = setInterval(() => { send(val); }, 50); // ส่งทุก 50ms
-        }
-
-        function stopInput() {
-            if (intervalId) { clearInterval(intervalId); intervalId = null; }
         }
 
         async function send(val) {

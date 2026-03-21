@@ -3,36 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Control v1.1</title>
+    <title>ESP32-C3 Pro v1.2</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-action: #ef4444; --btn-conn: #10b981; }
+        :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-sine: #a855f7; --btn-gpio: #ef4444; --btn-conn: #10b981; }
         body { font-family: system-ui, sans-serif; background-color: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: none; position: relative; }
-        .dashboard { background: var(--card); padding: 30px; border-radius: 40px; display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(4, 85px); gap: 18px; }
-        button { border: none; border-radius: 22px; color: white; font-size: 26px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.05s; box-shadow: 0 8px 0 rgba(0,0,0,0.5); position: relative; top: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-        button:active { top: 6px; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
-        /* ปรับปุ่ม B ให้เด่นขึ้นเพราะใช้ปุ่มเดียว */
-        .btn-b { grid-column: 1 / span 3; grid-row: 1; background: var(--btn-action); height: 70px; } 
+        .dashboard { background: var(--card); padding: 25px; border-radius: 40px; display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(4, 85px); gap: 15px; }
+        button { border: none; border-radius: 22px; color: white; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.05s; box-shadow: 0 6px 0 rgba(0,0,0,0.5); position: relative; top: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        button:active { top: 4px; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+        .btn-a { grid-column: 1 / span 1.5; grid-row: 1; background: var(--btn-sine); font-size: 16px; } 
+        .btn-b { grid-column: 2.5 / span 1.5; grid-row: 1; background: var(--btn-gpio); font-size: 16px; } 
         .btn-up { grid-column: 2; grid-row: 2; background: var(--btn-main); }
         .btn-left { grid-column: 1; grid-row: 3; background: var(--btn-main); }
         .btn-right { grid-column: 3; grid-row: 3; background: var(--btn-main); }
         .btn-down { grid-column: 2; grid-row: 4; background: var(--btn-main); }
         .btn-connect { grid-column: 3; grid-row: 4; background: var(--btn-conn); border-radius: 50%; }
-        #status { margin-bottom: 20px; font-size: 14px; color: #94a3b8; }
+        #status { margin-bottom: 15px; font-size: 14px; color: #94a3b8; }
         .version-info { position: absolute; bottom: 10px; right: 15px; font-size: 12px; color: #475569; }
     </style>
 </head>
 <body>
     <div id="status">สถานะ: รอการเชื่อมต่อ</div>
     <div class="dashboard">
-        <button class="btn-b" onpointerdown="sendOnce('B')">TOGGLE GPIO 2 (B)</button>
-        
+        <button class="btn-a" onpointerdown="sendOnce('A')">AUTO</button>
+        <button class="btn-b" onpointerdown="sendOnce('B')">SHOT</button>
         <button class="btn-up" onpointerdown="startLoop('U')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▲</button>
         <button class="btn-left" onpointerdown="startLoop('L')" onpointerup="stopLoop()" onpointerleave="stopLoop()">◀</button>
         <button class="btn-right" onpointerdown="startLoop('R')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▶</button>
         <button class="btn-down" onpointerdown="startLoop('D')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▼</button>
         <button id="conn-btn" class="btn-connect" onclick="connect()">🔗</button>
     </div>
-    <div class="version-info">v1.1 (Toggle Mode)</div>
+    <div class="version-info">v1.2 (Sine Wave Mode)</div>
 
     <script>
         let characteristic;
@@ -40,7 +40,7 @@
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
         const CHAR_UUID = "6d6534e4-4d21-4d1a-9694-8740f901a1c3";
 
-        function vibrate() { if (navigator.vibrate) navigator.vibrate(30); }
+        function vibrate(ms=30) { if (navigator.vibrate) navigator.vibrate(ms); }
 
         async function connect() {
             try {
@@ -51,7 +51,7 @@
                 const service = await server.getPrimaryService(SERVICE_UUID);
                 characteristic = await service.getCharacteristic(CHAR_UUID);
                 document.getElementById('status').innerText = "เชื่อมต่อแล้ว ✅";
-                vibrate();
+                vibrate(100);
             } catch (err) { console.log(err); }
         }
 

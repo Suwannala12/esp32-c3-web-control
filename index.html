@@ -3,22 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ESP32-C3 Pro v1.3</title>
+    <title>ESP32-C3 Pro v1.4</title>
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --btn-main: #3b82f6; --btn-sine: #a855f7; --btn-gpio: #ef4444; --btn-conn: #10b981; }
         body { font-family: system-ui, sans-serif; background-color: var(--bg); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; touch-action: none; position: relative; }
-        .dashboard { background: var(--card); padding: 25px; border-radius: 40px; display: grid; grid-template-columns: repeat(3, 85px); grid-template-rows: repeat(4, 85px); gap: 15px; }
-        button { border: none; border-radius: 22px; color: white; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.05s; box-shadow: 0 6px 0 rgba(0,0,0,0.5); position: relative; top: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-        button:active { top: 4px; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
-        .btn-a { grid-column: 1 / span 1.5; grid-row: 1; background: var(--btn-sine); font-size: 16px; } 
-        .btn-b { grid-column: 2.5 / span 1.5; grid-row: 1; background: var(--btn-gpio); font-size: 16px; } 
+        
+        /* ปรับ Grid ให้รองรับการวางชิดขอบ */
+        .dashboard { 
+            background: var(--card); 
+            padding: 30px; 
+            border-radius: 40px; 
+            display: grid; 
+            grid-template-columns: repeat(3, 85px); 
+            grid-template-rows: repeat(4, 85px); 
+            gap: 20px; 
+        }
+
+        button { border: none; border-radius: 22px; color: white; font-size: 20px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.05s; box-shadow: 0 8px 0 rgba(0,0,0,0.5); position: relative; top: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+        button:active { top: 6px; box-shadow: 0 2px 0 rgba(0,0,0,0.5); }
+
+        /* แถวที่ 1: ชิดซ้าย และ ชิดขวา */
+        .btn-a { grid-column: 1; grid-row: 1; background: var(--btn-sine); font-size: 14px; } 
+        .btn-b { grid-column: 3; grid-row: 1; background: var(--btn-gpio); font-size: 14px; } 
+
+        /* แถวที่ 2-4: ปุ่มทิศทาง */
         .btn-up { grid-column: 2; grid-row: 2; background: var(--btn-main); }
         .btn-left { grid-column: 1; grid-row: 3; background: var(--btn-main); }
         .btn-right { grid-column: 3; grid-row: 3; background: var(--btn-main); }
         .btn-down { grid-column: 2; grid-row: 4; background: var(--btn-main); }
-        /* ย้ายปุ่ม Connect ไปขวาสุด */
-        .btn-connect { grid-column: 3; grid-row: 4; background: var(--btn-conn); border-radius: 50%; }
-        #status { margin-bottom: 15px; font-size: 14px; color: #94a3b8; }
+
+        /* ปุ่มเชื่อมต่อ: ล่างขวาสุด */
+        .btn-connect { grid-column: 3; grid-row: 4; background: var(--btn-conn); border-radius: 50%; font-size: 24px; }
+
+        #status { margin-bottom: 20px; font-size: 14px; color: #94a3b8; }
         .version-info { position: absolute; bottom: 10px; right: 15px; font-size: 12px; color: #475569; }
     </style>
 </head>
@@ -27,13 +44,15 @@
     <div class="dashboard">
         <button class="btn-a" onpointerdown="sendOnce('A')">AUTO</button>
         <button class="btn-b" onpointerdown="sendOnce('B')">LED</button>
+        
         <button class="btn-up" onpointerdown="startLoop('U')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▲</button>
         <button class="btn-left" onpointerdown="startLoop('L')" onpointerup="stopLoop()" onpointerleave="stopLoop()">◀</button>
         <button class="btn-right" onpointerdown="startLoop('R')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▶</button>
         <button class="btn-down" onpointerdown="startLoop('D')" onpointerup="stopLoop()" onpointerleave="stopLoop()">▼</button>
+        
         <button id="conn-btn" class="btn-connect" onclick="connect()">🔗</button>
     </div>
-    <div class="version-info">v1.3 (Auto-Sync LED)</div>
+    <div class="version-info">v1.4 (Custom Layout)</div>
 
     <script>
         let characteristic;

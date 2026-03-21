@@ -57,13 +57,15 @@
 
         function sendOnce(val) { vibrate(); send(val); }
 
-        function startLoop(val) {
-            if (intervalId) return;
-            vibrate();
-            send(val);
-            // ส่งซ้ำทุกๆ 100ms เพื่อยืนยันว่ายังกดอยู่
-            intervalId = setInterval(() => { send(val); }, 100);
-        }
+// ในฟังก์ชัน startLoop ให้เปลี่ยนตัวเลขเป็น 50
+function startLoop(val) {
+    if (intervalId) return;
+    vibrate();
+    send(val);
+    intervalId = setInterval(() => { 
+        send(val); 
+    }, 50); // ส่งรัวขึ้นเป็น 50ms
+}}
 
         function stopLoop() {
             if (intervalId) {
